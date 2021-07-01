@@ -8,6 +8,26 @@
 #include "../os/os.h"
 #include "disk_strategy.hpp"
 
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
+
+std::string exec(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
 using namespace std;
 namespace license {
 namespace hw_identifier {
@@ -64,17 +84,17 @@ LCC_API_HW_IDENTIFICATION_STRATEGY DiskStrategy::identification_strategy() const
 
 std::vector<HwIdentifier> DiskStrategy::alternative_ids() const {
 	vector<array<uint8_t, HW_IDENTIFIER_PROPRIETARY_DATA>> data;
-	FUNCTION_RETURN result = generate_disk_pc_id(data);
+	// FUNCTION_RETURN result = generate_disk_pc_id(data);
 	vector<HwIdentifier> identifiers;
-	if (result == FUNC_RET_OK) {
-		identifiers.reserve(data.size());
-		for (auto &it : data) {
-			HwIdentifier pc_id;
-			pc_id.set_identification_strategy(identification_strategy());
-			pc_id.set_data(it);
-			identifiers.push_back(pc_id);
-		}
-	}
+	HwIdentifier pc_id;
+
+	std::string dmidecode_id = exec("dmidecode -t system | grep UUID | awk '{ print $2 }'");
+	array<uint8_t, HW_IDENTIFIER_PROPRIETARY_DATA> a_disk_id = {};
+	strncpy((char *)&a_disk_id[0], dmidecode_id.c_str(), a_disk_id.size() - 1);
+
+	pc_id.set_identification_strategy(identification_strategy());
+	pc_id.set_data(a_disk_id);
+	identifiers.push_back(pc_id);
 	return identifiers;
 }
 
