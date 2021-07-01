@@ -51,7 +51,7 @@ FUNCTION_RETURN LicenseVerifier::verify_limits(const FullLicenseInfo& lic_info) 
 	const auto start_date = lic_info.m_limits.find(PARAM_BEGIN_DATE);
 	if (is_valid && start_date != lic_info.m_limits.end()) {
 		if (seconds_from_epoch(start_date->second) > now) {
-			m_event_registry.addEvent(PRODUCT_EXPIRED, lic_info.source.c_str(),
+			m_event_registry.addEvent(PRODUCT_BEFORE_START, lic_info.source.c_str(),
 									  ("Valid from " + start_date->second).c_str());
 			is_valid = false;
 		}
@@ -64,11 +64,11 @@ FUNCTION_RETURN LicenseVerifier::verify_limits(const FullLicenseInfo& lic_info) 
 			long last_validation_date;
 			ifs >> last_validation_date;
 			if (seconds_from_epoch(start_date->second) > last_validation_date) {
-				m_event_registry.addEvent(PRODUCT_EXPIRED, lic_info.source.c_str(), ("Valid from last validation" + last_validation_string).c_str());
+				m_event_registry.addEvent(MANIPULATED_DATE, lic_info.source.c_str(), ("Valid from last validation" + last_validation_string).c_str());
 				is_valid = false;
 			}
 	} else {
-		m_event_registry.addEvent(PRODUCT_EXPIRED, lic_info.source.c_str(), ("Missing last log" + last_validation_string).c_str());
+		m_event_registry.addEvent(MISSING_DATE_LOG, lic_info.source.c_str(), ("Missing last log" + last_validation_string).c_str());
 		is_valid = false;
 	}
 	ifs.close();

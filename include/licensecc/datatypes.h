@@ -29,16 +29,21 @@ extern "C" {
 
 typedef enum {
 	LICENSE_OK = 0,  // OK
-	LICENSE_FILE_NOT_FOUND = 1,  // license file not found
-	LICENSE_SERVER_NOT_FOUND = 2,  // license server can't be contacted
-	ENVIRONMENT_VARIABLE_NOT_DEFINED = 3,  // environment variable not defined
-	FILE_FORMAT_NOT_RECOGNIZED = 4,  // license file has invalid format (not .ini file)
-	LICENSE_MALFORMED = 5,  // some mandatory field are missing, or data can't be fully read.
-	PRODUCT_NOT_LICENSED = 6,  // this product was not licensed
-	PRODUCT_EXPIRED = 7,    //!< PRODUCT_EXPIRED
-	LICENSE_CORRUPTED = 8,  // License signature didn't match with current license
-	IDENTIFIERS_MISMATCH = 9,  // Calculated identifier and the one provided in license didn't match
+	LICENSE_SERVER_NOT_FOUND = 1,  // license server can't be contacted
+	ENVIRONMENT_VARIABLE_NOT_DEFINED = 1,  // environment variable not defined
+	PRODUCT_NOT_LICENSED = 3,  // this product was not licensed
 
+ 	// Update to use Skycatch errors codes 51 to 59
+	LICENSE_FILE_NOT_FOUND = 51,			// License file not found
+	IDENTIFIERS_MISMATCH = 52,				// Calculated identifier and the one provided in license didn't match
+	LICENSE_MALFORMED = 53,						// Some mandatory field are missing, or data can't be fully read.
+	PRODUCT_EXPIRED = 54,							// Current date is after expiration date
+	PRODUCT_BEFORE_START = 55,				// Current date is before start date
+	MANIPULATED_DATE = 56,						// Current date is before last license validation, user has changed machine's clock
+	MISSING_DATE_LOG = 57,						// Success validation logs file is missing, user may had deleted Docker Volumne
+	LICENSE_CORRUPTED = 58,						// License signature didn't match with current license
+	FILE_FORMAT_NOT_RECOGNIZED = 59,	// License file has invalid format (not .ini file)
+	
 	LICENSE_SPECIFIED = 100,  // license location was specified
 	LICENSE_FOUND = 101,  // License file has been found or license data has been located
 	PRODUCT_FOUND = 102,  // License has been loaded and the declared product has been found
