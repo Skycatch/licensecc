@@ -7,6 +7,7 @@
 #include <cmath>
 #include <algorithm>
 #include <licensecc_properties.h>
+#include <fstream>
 
 #include "license_verifier.hpp"
 #include "../base/string_utils.h"
@@ -55,11 +56,36 @@ FUNCTION_RETURN LicenseVerifier::verify_limits(const FullLicenseInfo& lic_info) 
 			is_valid = false;
 		}
 	}
+
+	const char* logPath = "/logs/last.log";
+	ifstream ifs;
+	ifs.open(logPath, ifstream::in);
+	if(ifs.is_open()){
+			long last_validation_date;
+			ifs >> last_validation_date;
+			if (seconds_from_epoch(start_date->second) > last_validation_date) {
+				m_event_registry.addEvent(PRODUCT_EXPIRED, lic_info.source.c_str(), ("Valid from last validation" + last_validation_string).c_str());
+				is_valid = false;
+			}
+	} else {
+		m_event_registry.addEvent(PRODUCT_EXPIRED, lic_info.source.c_str(), ("Missing last log" + last_validation_string).c_str());
+		is_valid = false;
+	}
+	ifs.close();
+
 	const auto client_sig = lic_info.m_limits.find(PARAM_CLIENT_SIGNATURE);
 	if (is_valid && client_sig != lic_info.m_limits.end()) {
 		const LCC_EVENT_TYPE event = hw_identifier::HwIdentifierFacade::validate_pc_signature(client_sig->second);
 		m_event_registry.addEvent(event, lic_info.source);
 		is_valid = is_valid && (event == LICENSE_OK);
+	}
+
+	// Save last date when validation were success
+	if(is_valid){
+		ofstream ofs;
+		ofs.open(logPath, ofstream::out|ofstream::trunc);
+		ofs << to_string(now);
+		ofs.close();
 	}
 	return is_valid ? FUNC_RET_OK : FUNC_RET_ERROR;
 }
