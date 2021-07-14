@@ -63,7 +63,7 @@ FUNCTION_RETURN LicenseVerifier::verify_limits(const FullLicenseInfo& lic_info) 
 	if(ifs.is_open()){
 			long last_validation_date;
 			ifs >> last_validation_date;
-			if (seconds_from_epoch(start_date->second) > last_validation_date) {
+			if (last_validation_date > now) {
 				m_event_registry.addEvent(MANIPULATED_DATE, lic_info.source.c_str(), "Valid from last validation");
 				is_valid = false;
 			}
